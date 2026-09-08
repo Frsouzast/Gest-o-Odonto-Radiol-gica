@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+/* ---------- Tema claro (padrão) ---------- */
+:root {
+  --bg: #fafaf9;
+  --bg-alt-strong: #e7e5e4;
+  --surface: #ffffff;
+  --border: #e7e5e4;
+  --border-subtle: #f5f5f4;
+  --border-strong: #d6d3d1;
+  --text: #1c1917;
+  --text-secondary: #44403c;
+  --text-muted: #78716c;
+  --text-faint: #a8a29e;
+
+  --danger: #dc2626;
+  --danger-faint: #f87171;
+  --danger-bg: #fef2f2;
+  --danger-bg-strong: #fee2e2;
+  --danger-border: #fee2e2;
+
+  --warning: #b45309;
+  --warning-strong: #78350f;
+  --warning-bg: #fffbeb;
+  --warning-bg-strong: #fef3c7;
+  --warning-border: #fef3c7;
+}
+
+/* ---------- Tema escuro ---------- */
+.dark {
+  --bg: #1c1917;
+  --bg-alt-strong: #44403c;
+  --surface: #292524;
+  --border: #44403c;
+  --border-subtle: #3f3a37;
+  --border-strong: #57534e;
+  --text: #fafaf9;
+  --text-secondary: #d6d3d1;
+  --text-muted: #a8a29e;
+  --text-faint: #78716c;
+
+  --danger: #f87171;
+  --danger-faint: #fca5a5;
+  --danger-bg: #450a0a;
+  --danger-bg-strong: #7f1d1d;
+  --danger-border: #7f1d1d;
+
+  --warning: #fbbf24;
+  --warning-strong: #fde68a;
+  --warning-bg: #451a03;
+  --warning-bg-strong: #78350f;
+  --warning-border: #78350f;
+}
+
+/* ---------- Cor de destaque (accent) — claro ---------- */
+:root, [data-accent="teal"] {
+  --accent: #0f766e;
+  --accent-hover: #115e59;
+  --accent-text: #0f766e;
+  --accent-text-hover: #134e4a;
+  --accent-soft-bg: #f0fdfa;
+  --accent-soft-bg-strong: #ccfbf1;
+  --accent-soft-border: #99f6e4;
+}
+[data-accent="blue"] {
+  --accent: #1d4ed8;
+  --accent-hover: #1e40af;
+  --accent-text: #1d4ed8;
+  --accent-text-hover: #1e3a8a;
+  --accent-soft-bg: #eff6ff;
+  --accent-soft-bg-strong: #dbeafe;
+  --accent-soft-border: #bfdbfe;
+}
+[data-accent="purple"] {
+  --accent: #7e22ce;
+  --accent-hover: #6b21a8;
+  --accent-text: #7e22ce;
+  --accent-text-hover: #581c87;
+  --accent-soft-bg: #faf5ff;
+  --accent-soft-bg-strong: #f3e8ff;
+  --accent-soft-border: #e9d5ff;
+}
+
+/* ---------- Cor de destaque — escuro (tons mais claros pra contrastar) ---------- */
+.dark[data-accent="teal"] {
+  --accent: #0f766e;
+  --accent-hover: #115e59;
+  --accent-text: #5eead4;
+  --accent-text-hover: #99f6e4;
+  --accent-soft-bg: #134e4a;
+  --accent-soft-bg-strong: #115e59;
+  --accent-soft-border: #0f766e;
+}
+.dark[data-accent="blue"] {
+  --accent: #1d4ed8;
+  --accent-hover: #1e40af;
+  --accent-text: #93c5fd;
+  --accent-text-hover: #bfdbfe;
+  --accent-soft-bg: #1e3a8a;
+  --accent-soft-bg-strong: #1e40af;
+  --accent-soft-border: #1d4ed8;
+}
+.dark[data-accent="purple"] {
+  --accent: #7e22ce;
+  --accent-hover: #6b21a8;
+  --accent-text: #d8b4fe;
+  --accent-text-hover: #e9d5ff;
+  --accent-soft-bg: #581c87;
+  --accent-soft-bg-strong: #6b21a8;
+  --accent-soft-border: #7e22ce;
+}
+
+body { background: var(--bg); color: var(--text); }
+

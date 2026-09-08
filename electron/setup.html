@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<title>Configuração inicial</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", sans-serif; background: #fafaf9; margin: 0; padding: 40px; color: #1c1917; }
+  .card { max-width: 440px; margin: 0 auto; background: white; border: 1px solid #e7e5e4; border-radius: 10px; padding: 24px; }
+  h1 { font-size: 17px; margin: 0 0 4px; }
+  p.sub { color: #78716c; font-size: 13px; margin: 0 0 20px; }
+  .opcao { border: 1px solid #e7e5e4; border-radius: 8px; padding: 14px; margin-bottom: 10px; cursor: pointer; }
+  .opcao:hover { border-color: #0f766e; }
+  .opcao.selecionada { border-color: #0f766e; background: #f0fdfa; }
+  .opcao h2 { font-size: 14px; margin: 0 0 4px; }
+  .opcao p { font-size: 12px; color: #78716c; margin: 0; }
+  label { font-size: 12px; color: #78716c; display: block; margin: 14px 0 4px; }
+  input[type=text] { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #e7e5e4; border-radius: 6px; font-size: 13px; }
+  button.confirmar { width: 100%; margin-top: 18px; background: #0f766e; color: white; border: none; border-radius: 6px; padding: 10px; font-size: 13px; cursor: pointer; }
+  button.confirmar:disabled { opacity: 0.4; cursor: not-allowed; }
+  #camposCliente { display: none; }
+  .erro { color: #dc2626; font-size: 12px; margin-top: 10px; display: none; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Precificação Clínica — configuração inicial</h1>
+    <p class="sub">Isso só aparece uma vez, na primeira abertura do programa.</p>
+
+    <div class="opcao" id="opcaoServidor" onclick="selecionar('servidor')">
+      <h2>💻 Este computador é o Servidor</h2>
+      <p>Os dados ficam guardados aqui. Outros computadores da mesma rede podem se conectar como clientes.</p>
+    </div>
+    <div class="opcao" id="opcaoCliente" onclick="selecionar('cliente')">
+      <h2>🔗 Conectar a um Servidor existente</h2>
+      <p>Use isto se os dados já estão em outro computador da clínica.</p>
+    </div>
+
+    <div id="camposCliente">
+      <label>Endereço do computador Servidor (peça pra quem administra)</label>
+      <input type="text" id="inputHost" placeholder="ex: 192.168.1.23" />
+    </div>
+
+    <button class="confirmar" id="btnConfirmar" disabled onclick="confirmar()">Continuar</button>
+    <p class="erro" id="erro"></p>
+  </div>
+
+<script>
+  let modoSelecionado = null;
+
+  function selecionar(modo) {
+    modoSelecionado = modo;
+    document.getElementById('opcaoServidor').classList.toggle('selecionada', modo === 'servidor');
+    document.getElementById('opcaoCliente').classList.toggle('selecionada', modo === 'cliente');
+    document.getElementById('camposCliente').style.display = modo === 'cliente' ? 'block' : 'none';
+    atualizarBotao();
+  }
+
+  document.getElementById('inputHost').addEventListener('input', atualizarBotao);
+
+  function atualizarBotao() {
+    const host = document.getElementById('inputHost').value.trim();
+    const valido = modoSelecionado === 'servidor' || (modoSelecionado === 'cliente' && host.length > 0);
+    document.getElementById('btnConfirmar').disabled = !valido;
+  }
+
+  async function confirmar() {
+    const erro = document.getElementById('erro');
+    erro.style.display = 'none';
+    const host = document.getElementById('inputHost').value.trim();
+    try {
+      await window.setupAPI.salvar({ modo: modoSelecionado, servidorHost: host || null });
+    } catch (e) {
+      erro.textContent = 'Não foi possível salvar: ' + e.message;
+      erro.style.display = 'block';
+    }
+  }
+</script>
+</body>
+</html>
