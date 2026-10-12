@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="160" viewBox="0 0 700 160" fill="none" role="img" aria-labelledby="title">
+  <title id="title">Flux-X Odonto, versão para fundo escuro</title>
+  <g transform="translate(0 8) scale(.6)">
+    <path d="M58 28H145C163 28 177 36 188 51L201 68L164 91L152 75C149 71 145 69 139 69H99C92 69 88 74 88 81V114H132C140 114 146 117 151 123L166 141H88V211C88 218 83 223 76 223H55C48 223 43 218 43 211V43C43 35 50 28 58 28Z" fill="#FFFFFF"/>
+    <path d="M83 126L198 64C202 62 207 60 213 59L239 56C243 55 245 59 243 63L215 119L198 137H83V126Z" fill="#159DC6"/>
+    <path d="M98 129L190 80L211 121L198 136H98V129Z" fill="#55C9D9"/>
+    <path d="M83 140H198L215 158L243 203C245 207 242 211 238 210L213 207C207 206 202 204 198 202L83 151V140Z" fill="#078FA5"/>
+    <path d="M99 141H197L210 153L190 160L99 148V141Z" fill="#35C9A7"/>
+    <circle cx="83" cy="138" r="21" fill="#35C9A7" stroke="#123B62" stroke-width="7"/>
+  </g>
+  <text x="181" y="76" fill="#FFFFFF" font-family="Geist, 'Segoe UI', Arial, sans-serif" font-size="58" font-weight="700" letter-spacing="-2">Flux-X</text>
+  <text x="184" y="117" fill="#70DED0" font-family="Geist, 'Segoe UI', Arial, sans-serif" font-size="28" font-weight="500" letter-spacing=".2">Odonto</text>
+</svg>

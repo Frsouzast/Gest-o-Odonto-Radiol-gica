@@ -1,0 +1,388 @@
+// Schema do sistema de Gestão Odonto-Radiológica (porta do app Electron original).
+// Multi-tenant via clinica_id; 3 papéis: dono, financeiro, recepcao.
+
+generator client {
+  provider        = "prisma-client-js"
+
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Clinica {
+  id        String   @id
+  nome      String
+  cnpj      String?
+  criadoEm  DateTime @default(now()) @map("criado_em")
+
+  usuarios              Usuario[]
+  capacidade            CapacidadeProdutiva?
+  despesasFixas         DespesaFixa[]
+  ativos                Ativo[]
+  funcionarios         Funcionario[]
+  insumos               Insumo[]
+  procedimentos         Procedimento[]
+  agendamentos          Agendamento[]
+  convenios             Convenio[]
+  despesasRecorrentes   DespesaRecorrente[]
+  contasPagar           ContaPagar[]
+  contasReceber         ContaReceber[]
+  movimentosBancarios   MovimentoBancario[]
+  lotesFaturamento      LoteFaturamento[]
+  financeiroConfig      FinanceiroConfig?
+
+  @@map("clinica")
+}
+
+model Usuario {
+  id        String   @id
+  clinicaId String   @map("clinica_id")
+  nome      String
+  email     String   @unique
+  senhaHash String   @map("senha_hash")
+  papel     String   // 'dono' | 'financeiro' | 'recepcao'
+  criadoEm  DateTime @default(now()) @map("criado_em")
+
+  clinica          Clinica         @relation(fields: [clinicaId], references: [id], onDelete: Cascade)
+  historicosPreco  HistoricoPreco[]
+  sessoes         Sessao[]
+  acesso          UsuarioAcesso?
+
+  @@map("usuario")
+}
+
+model Sessao {
+  id          String   @id
+  usuarioId   String   @map("usuario_id")
+  tokenHash   String   @unique @map("token_hash")
+  csrfHash    String   @map("csrf_hash")
+  expiraEm    DateTime @map("expira_em")
+  revogadaEm  DateTime? @map("revogada_em")
+  criadoEm    DateTime @default(now()) @map("criado_em")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([expiraEm])
+  @@map("sessao")
+}
+
+// Ausência de registro mantém o acesso legado ativo. Desativação nunca apaga o usuário.
+model UsuarioAcesso {
+  usuarioId String   @id @map("usuario_id")
+  ativo     Boolean  @default(true)
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("usuario_acesso")
+}
+
+model CapacidadeProdutiva {
+  clinicaId        String  @id @map("clinica_id")
+  diasTrabalhados Int     @default(24) @map("dias_trabalhados")
+  horasPorDia      Float   @default(8)  @map("horas_por_dia")
+  unidadesRenda    Float   @default(1)  @map("unidades_renda")
+  percentOcupacao  Float   @default(0.75) @map("percent_ocupacao")
+
+  clinica Clinica @relation(fields: [clinicaId], references: [id], onDelete: Cascade)
+
+  @@map("capacidade_produtiva")
+}
+
+model DespesaFixa {
+  id        String  @id
+  clinicaId String  @map("clinica_id")
+  nome      String
+  valor     Float   @default(0)
+  ordem     Int     @default(0)
+
+  clinica Clinica @relation(fields: [clinicaId], references: [id], onDelete: Cascade)
+
+  @@index([clinicaId])
+  @@map("despesa_fixa")
+}
+
+model Ativo {
+  id             String  @id
+  clinicaId      String  @map("clinica_id")
+  nome           String
+  dataAquisicao  String? @map("data_aquisicao")
+  valorAquisicao Float   @default(0) @map("valor_aquisicao")
+  vidaUtilAnos   Float   @default(1) @map("vida_util_anos")
+
+  clinica      Clinica       @relation(fields: [clinicaId], references: [id], onDelete: Cascade)
+  procedimentos Procedimento[]
+
+  @@index([clinicaId])
+  @@map("ativo")
+}
+
+model Funcionario {
+  id            String  @id
+  clinicaId     String  @map("clinica_id")
+  cargo         String
+  quantidade    Float   @default(1)
+  valorUnitario Float   @default(0) @map("valor_unitario")
+  encargosPct   Float   @default(0) @map("encargos_pct")
+  beneficios    Float   @default(0)
+
+  clinica Clinica @relation(fields: [clinicaId], references: [id], onDelete: Cascade)
+
+  @@index([clinicaId])
+  @@map("funcionario")
+}
+
+model Insumo {
+  id          String  @id
+  clinicaId   String  @map("clinica_id")
+  nome        String
+  unidade     String  @default("un")
+  valorTotal  Float   @default(0) @map("valor_total")
+  quantidade  Float   @default(1)
+
+  clinica       Clinica              @relation(fields: [clinicaId], references: [id], onDelete: Cascade)
+  procedimentos ProcedimentoInsumo[]
+
+  @@index([clinicaId])
+  @@map("insumo")
+}
+
+model Procedimento {
+  id                 String   @id
+  clinicaId          String   @map("clinica_id")
+  nome               String
+  tempoMinutos       Float    @default(0) @map("tempo_minutos")
+  laudos             Float    @default(0)
+  retrabalhoPct      Float    @default(0.03) @map("retrabalho_pct")
+  comissaoPct        Float    @default(0)   @map("comissao_pct")
+  lucroDesejadoPct   Float    @default(0.3) @map("lucro_desejado_pct")
+  inadimplenciaPct   Float    @default(0.03) @map("inadimplencia_pct")
+  impostosPct        Float    @default(0.15) @map("impostos_pct")
+  taxaCartaoPct      Float    @default(0.03) @map("taxa_cartao_pct")
+  outrosPct          Float    @default(0)   @map("outros_pct")
+  precoConcorrencia  Float?   @map("preco_concorrencia")
+  precoFinal         Float?   @map("preco_final")
+  ativo              Boolean  @default(true)
+  equipamentoId      String?  @map("equipamento_id")
+
+  clinica      Clinica             @relation(fields: [clinicaId], references: [id], onDelete: Cascade)
+  itens        ProcedimentoInsumo[]
+  historicos   HistoricoPreco[]
+  equipamento  Ativo?              @relation(fields: [equipamentoId], references: [id])
+  contasReceber ContaReceber[]
+  tabelaPrecos ConvenioTabelaPreco[]
+
+  @@index([clinicaId])
+  @@map("procedimento")
+}
+
+model ProcedimentoInsumo {
+  procedimentoId String @map("procedimento_id")
+  insumoId       String @map("insumo_id")
+  quantidade     Float  @default(1)
+
+  procedimento Procedimento @relation(fields: [procedimentoId], references: [id], onDelete: Cascade)
+  insumo       Insumo       @relation(fields: [insumoId], references: [id], onDelete: Restrict)
+
+  @@id([procedimentoId, insumoId])
+  @@index([insumoId])
+  @@map("procedimento_insumo")
+}
+
+model HistoricoPreco {
+  id             String   @id
+  procedimentoId String   @map("procedimento_id")
+  usuarioId      String?  @map("usuario_id")
+  precoAnterior  Float?   @map("preco_anterior")
+  precoNovo      Float?   @map("preco_novo")
+  alteradoEm     DateTime @default(now()) @map("alterado_em")
+
+  procedimento Procedimento @relation(fields: [procedimentoId], references: [id], onDelete: Cascade)
+  usuario     Usuario?     @relation(fields: [usuarioId], references: [id])
+
+  @@index([procedimentoId])
+  @@map("historico_preco")
+}
+
+model Agendamento {
+  id             String   @id
+  clinicaId      String   @map("clinica_id")
+  nome           String
+  telefone       String?
+  exame          String?
+  plano          Boolean  @default(false)
+  particular     Boolean  @default(false)
+  data           String   // ISO date YYYY-MM-DD
+  hora           String?
+  status         String   @default("aguardando") // aguardando|atendido|faltou|desmarcou|remarcado
+  remarcadoParaId String? @map("remarcado_para_id")
+  criadoEm       DateTime @default(now()) @map("criado_em")
+
+  clinica       Clinica     @relation(fields: [clinicaId], references: [id], onDelete: Cascade)
+  remarcadoPara Agendamento? @relation("RemarcadoPara", fields: [remarcadoParaId], references: [id])
+  remarcadoDe   Agendamento[] @relation("RemarcadoPara")
+
+  @@index([clinicaId, data])
+  @@map("agendamento")
+}
+
+model Convenio {
+  id              String   @id
+  clinicaId       String   @map("clinica_id")
+  nome            String
+  cnpj            String?
+  telefone        String?
+  email           String?
+  responsavel     String?
+  prazoMedioDias  Int      @default(30) @map("prazo_medio_dias")
+  ativo           Boolean  @default(true)
+  criadoEm        DateTime @default(now()) @map("criado_em")
+
+  clinica        Clinica              @relation(fields: [clinicaId], references: [id], onDelete: Cascade)
+  tabelaPrecos   ConvenioTabelaPreco[]
+  contasReceber  ContaReceber[]
+  lotes          LoteFaturamento[]
+
+  @@index([clinicaId])
+  @@map("convenio")
+}
+
+model ConvenioTabelaPreco {
+  id             String   @id
+  convenioId     String   @map("convenio_id")
+  procedimentoId String   @map("procedimento_id")
+  valor          Float
+  vigenciaInicio String   @map("vigencia_inicio") // YYYY-MM-DD
+  criadoEm       DateTime @default(now()) @map("criado_em")
+
+  convenio     Convenio     @relation(fields: [convenioId], references: [id], onDelete: Cascade)
+  procedimento Procedimento @relation(fields: [procedimentoId], references: [id], onDelete: Cascade)
+
+  @@index([convenioId, procedimentoId, vigenciaInicio])
+  @@map("convenio_tabela_preco")
+}
+
+model DespesaRecorrente {
+  id            String   @id
+  clinicaId     String   @map("clinica_id")
+  descricao     String
+  categoria     String?
+  fornecedor    String?
+  valor         Float
+  diaVencimento Int      @default(5) @map("dia_vencimento")
+  ativa         Boolean  @default(true)
+
+  clinica    Clinica      @relation(fields: [clinicaId], references: [id], onDelete: Cascade)
+  contasPagar ContaPagar[]
+
+  @@index([clinicaId])
+  @@map("despesa_recorrente")
+}
+
+model ContaPagar {
+  id            String   @id
+  clinicaId     String   @map("clinica_id")
+  descricao     String
+  categoria     String?
+  fornecedor    String?
+  valor         Float
+  vencimento    String   // YYYY-MM-DD
+  status        String   @default("aberto") // aberto|pago|vencido|cancelado
+  dataPagamento String?  @map("data_pagamento")
+  recorrenteId  String?  @map("recorrente_id")
+  criadoEm      DateTime @default(now()) @map("criado_em")
+
+  clinica    Clinica           @relation(fields: [clinicaId], references: [id], onDelete: Cascade)
+  recorrente DespesaRecorrente? @relation(fields: [recorrenteId], references: [id])
+
+  @@index([clinicaId, vencimento])
+  @@map("conta_pagar")
+}
+
+model ContaReceber {
+  id                String   @id
+  clinicaId         String   @map("clinica_id")
+  pacienteNome      String?  @map("paciente_nome")
+  procedimentoId    String?  @map("procedimento_id")
+  convenioId        String?  @map("convenio_id")
+  dentistaSolicitante String? @map("dentista_solicitante")
+  dataExame         String   @map("data_exame") // YYYY-MM-DD
+  valorFaturado     Float    @map("valor_faturado")
+  valorPago         Float?   @map("valor_pago")
+  vencimento        String?
+  status            String   @default("aberto") // aberto|recebido|vencido|parcial|cancelado
+  dataRecebimento   String?  @map("data_recebimento")
+  loteId            String?  @map("lote_id")
+  criadoEm          DateTime @default(now()) @map("criado_em")
+
+  clinica      Clinica      @relation(fields: [clinicaId], references: [id], onDelete: Cascade)
+  procedimento Procedimento? @relation(fields: [procedimentoId], references: [id])
+  convenio     Convenio?     @relation(fields: [convenioId], references: [id])
+  glosas       Glosa[]
+  lote         LoteFaturamento? @relation(fields: [loteId], references: [id])
+
+  @@index([clinicaId, dataExame])
+  @@index([convenioId])
+  @@map("conta_receber")
+}
+
+model Glosa {
+  id              String   @id
+  contaReceberId  String   @map("conta_receber_id")
+  valor           Float
+  motivo          String?
+  status          String   @default("glosada") // glosada|em_recurso|recuperada|perdida
+  valorRecuperado Float?   @map("valor_recuperado")
+  criadoEm        DateTime @default(now()) @map("criado_em")
+
+  contaReceber ContaReceber @relation(fields: [contaReceberId], references: [id], onDelete: Cascade)
+
+  @@index([contaReceberId])
+  @@map("glosa")
+}
+
+model FinanceiroConfig {
+  clinicaId           String  @id @map("clinica_id")
+  aliquotaImpostosPct Float   @default(0.06) @map("aliquota_impostos_pct")
+  saldoInicialCaixa   Float   @default(0) @map("saldo_inicial_caixa")
+  dataSaldoInicial    String? @map("data_saldo_inicial")
+
+  clinica Clinica @relation(fields: [clinicaId], references: [id], onDelete: Cascade)
+
+  @@map("financeiro_config")
+}
+
+model LoteFaturamento {
+  id             String   @id
+  clinicaId      String   @map("clinica_id")
+  convenioId     String   @map("convenio_id")
+  periodoInicio  String   @map("periodo_inicio")
+  periodoFim     String   @map("periodo_fim")
+  quantidade     Int
+  valor          Float
+  usuarioId      String?  @map("usuario_id")
+  fechadoEm      DateTime @default(now()) @map("fechado_em")
+
+  clinica   Clinica        @relation(fields: [clinicaId], references: [id], onDelete: Cascade)
+  convenio  Convenio       @relation(fields: [convenioId], references: [id])
+  contas    ContaReceber[]
+
+  @@index([convenioId])
+  @@map("lote_faturamento")
+}
+
+model MovimentoBancario {
+  id         String   @id
+  clinicaId  String   @map("clinica_id")
+  data       String   // YYYY-MM-DD
+  descricao  String?
+  valor      Float
+  conciliado Boolean  @default(false)
+
+  clinica Clinica @relation(fields: [clinicaId], references: [id], onDelete: Cascade)
+
+  @@index([clinicaId, data])
+  @@map("movimento_bancario")
+}

@@ -1,0 +1,32 @@
+{
+  "name": "Flux-X Odonto",
+  "short_name": "Flux-X Odonto",
+  "description": "Flux-X Odonto reúne agenda, precificação, equipe e financeiro para clínicas de radiologia odontológica.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f9fc",
+  "theme_color": "#087a9d",
+  "orientation": "any",
+  "categories": ["medical", "business", "productivity"],
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
